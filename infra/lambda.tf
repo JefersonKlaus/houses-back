@@ -5,12 +5,17 @@ locals {
 
 resource "null_resource" "lambda_dependencies" {
   triggers = {
-    requirements_hash = filebase64sha256("${path.module}/lambda/requirements.txt")
-    source_hash       = sha256(join("", [for file in fileset("${path.module}/lambda", "*.py") : filebase64sha256("${path.module}/lambda/${file}")]))
+    requirements_hash = filebase64sha256("${path.module}/../src/requirements.txt")
+    source_hash       = sha256(join("", [for file in fileset("${path.module}/../src", "*.py") : filebase64sha256("${path.module}/../src/${file}")]))
   }
 
   provisioner "local-exec" {
-    command = "rm -rf '${local.lambda_package_dir}' && mkdir -p '${local.lambda_package_dir}' && python3 -m pip install --disable-pip-version-check -r '${path.module}/lambda/requirements.txt' -t '${local.lambda_package_dir}' && cp '${path.module}'/lambda/*.py '${local.lambda_package_dir}/'"
+    interpreter = ["PowerShell", "-NoProfile", "-NonInteractive", "-Command"]
+    command = "$ErrorActionPreference = 'Stop'; " +
+      "if (Test-Path -LiteralPath '${local.lambda_package_dir}') { Remove-Item -LiteralPath '${local.lambda_package_dir}' -Recurse -Force }; " +
+      "New-Item -ItemType Directory -Path '${local.lambda_package_dir}' -Force | Out-Null; " +
+      "python -m pip install --disable-pip-version-check -r '${path.module}/../src/requirements.txt' -t '${local.lambda_package_dir}'; " +
+      "Copy-Item -Path '${path.module}/../src/*.py' -Destination '${local.lambda_package_dir}' -Force"
   }
 }
 
@@ -51,11 +56,10 @@ resource "aws_lambda_function" "webhook" {
 
   environment {
     variables = {
-      GEMINI_API_KEY          = var.gemini_api_key
-      GEMINI_MODEL            = var.gemini_model
-      WHATSAPP_TOKEN          = var.whatsapp_token
-      WHATSAPP_VERIFY_TOKEN   = var.whatsapp_verify_token
-      WHATSAPP_PHONE_NUMBER_ID = var.whatsapp_phone_number_id
+      GROQ_API_KEY            = var.groq_api_key
+      GROQ_MODEL              = var.groq_model
+      TWILIO_ACCOUNT_SID      = var.twilio_account_sid
+      TWILIO_AUTH_TOKEN       = var.twilio_auth_token
       GOOGLE_SHEET_ID         = var.google_sheet_id
       GOOGLE_CREDENTIALS_JSON = var.google_credentials_json
       GOOGLE_SHEET_WORKSHEET  = var.google_sheet_worksheet
@@ -105,4 +109,3 @@ resource "aws_lambda_permission" "api_gateway" {
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${aws_apigatewayv2_api.webhook.execution_arn}/*/*"
 }
-

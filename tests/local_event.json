@@ -1,0 +1,17 @@
+{
+  "version": "2.0",
+  "routeKey": "POST /webhook",
+  "rawPath": "/webhook",
+  "headers": {
+    "content-type": "application/x-www-form-urlencoded",
+    "host": "localhost"
+  },
+  "requestContext": {
+    "http": {
+      "method": "POST",
+      "path": "/webhook"
+    }
+  },
+  "body": "From=whatsapp%3A%2B5511999999999&Body=teste&NumMedia=0",
+  "isBase64Encoded": false
+}

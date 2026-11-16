@@ -4,32 +4,32 @@ import sys
 import unittest
 from unittest.mock import patch
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "lambda"))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 import function
 
 
 class WebhookTests(unittest.TestCase):
-    def test_verification_returns_challenge(self):
-        with patch.dict(os.environ, {"WHATSAPP_VERIFY_TOKEN": "secret"}):
-            result = function.verify_webhook(
-                {"queryStringParameters": {
-                    "hub.mode": "subscribe",
-                    "hub.verify_token": "secret",
-                    "hub.challenge": "12345",
-                }}
-            )
+    def test_text_message_returns_twiml(self):
+        result = function.lambda_handler(
+            {
+                "requestContext": {"http": {"method": "POST"}},
+                "body": "From=whatsapp%3A%2B5511999999999&Body=teste&NumMedia=0",
+            },
+            None,
+        )
         self.assertEqual(result["statusCode"], 200)
-        self.assertEqual(result["body"], "12345")
+        self.assertIn("Envie uma foto", result["body"])
 
-    def test_gemini_markdown_is_parsed(self):
-        result = function._parse_gemini_json(
+    def test_groq_markdown_is_parsed(self):
+        result = function._parse_groq_json(
             '```json\n{"amount": 42.5, "currency": "BRL"}\n```'
         )
         self.assertEqual(result["amount"], 42.5)
 
-    def test_post_accepts_base64_body(self):
-        payload = {"entry": [{"changes": [{"value": {"messages": []}}]}]}
-        body = __import__("base64").b64encode(json.dumps(payload).encode()).decode()
+    def test_base64_form_body_is_accepted(self):
+        body = __import__("base64").b64encode(
+            b"From=whatsapp%3A%2B5511999999999&Body=teste&NumMedia=0"
+        ).decode()
         result = function.lambda_handler(
             {"requestContext": {"http": {"method": "POST"}}, "body": body, "isBase64Encoded": True},
             None,

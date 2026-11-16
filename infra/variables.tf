@@ -10,27 +10,28 @@ variable "project_name" {
   default     = "houses-receipt-bot"
 }
 
-variable "gemini_api_key" {
-  description = "Google Gemini API key."
+variable "groq_api_key" {
+  description = "Groq API key."
   type        = string
   sensitive   = true
 }
 
-variable "whatsapp_token" {
-  description = "Meta WhatsApp Cloud API access token."
+variable "groq_model" {
+  description = "Groq vision model used for receipt extraction."
+  type        = string
+  default     = "meta-llama/llama-4-scout-17b-16e-instruct"
+}
+
+variable "twilio_account_sid" {
+  description = "Twilio Account SID."
   type        = string
   sensitive   = true
 }
 
-variable "whatsapp_verify_token" {
-  description = "Secret token configured in Meta webhook verification."
+variable "twilio_auth_token" {
+  description = "Twilio Auth Token."
   type        = string
   sensitive   = true
-}
-
-variable "whatsapp_phone_number_id" {
-  description = "WhatsApp Cloud API phone number ID."
-  type        = string
 }
 
 variable "google_sheet_id" {
@@ -49,10 +50,3 @@ variable "google_sheet_worksheet" {
   type        = string
   default     = ""
 }
-
-variable "gemini_model" {
-  description = "Gemini model used for receipt extraction."
-  type        = string
-  default     = "gemini-2.0-flash"
-}
-
