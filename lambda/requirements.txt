@@ -1,0 +1,4 @@
+google-genai==1.52.0
+gspread==6.2.1
+requests==2.32.3
+
